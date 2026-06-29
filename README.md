@@ -104,6 +104,14 @@ To change settings after install, edit `/etc/nbd-vram.conf`. Changes take effect
 
 ---
 
+## Suspend / resume
+
+The installer enables `vram-swap-nbd-suspend.service`, which tears the swap down before the machine sleeps and brings it back when it wakes. This is required for correctness: when the system suspends, the NVIDIA driver powers down the GPU and destroys the CUDA context backing the swap device, so any swap I/O still in flight blocks forever and the machine can hang on resume. The unit is ordered ahead of both systemd's sleep services and nvidia's power-down hooks, so the swapoff runs while the GPU is still alive, the VRAM is freed before it powers off, and a fresh context is built on resume. If swap was already stopped (manually or by power management) it is left stopped. On a machine that never actually suspends, the hook simply never fires.
+
+Please note: if swap is heavily used and the paged-out data can't fit back into RAM, the pre-sleep `swapoff` fails (the same ENOMEM case that's deliberately not forced, to avoid a panic), and the machine may still hang on resume. There's no way around evacuating VRAM into a RAM that can't hold it - free some memory before suspending.
+
+---
+
 ## Using the GPU at the same time
 
 NBD-VRAM uses your VRAM, so while it is active that memory is not available to anything else on the card. The installer asks how much to allocate and suggests an amount based on your setup: if this card does not drive a display (a hybrid laptop, or a workstation with a separate display GPU) it recommends nearly all of the VRAM, since the card is otherwise idle; if it does drive your display, it leaves headroom for the desktop and games. Whatever you choose, a GPU app started afterwards only gets the slice that is left, and if memory is being swapped while the GPU is busy the card does both jobs at once - rendering and serving swap copies - and neither is happy.

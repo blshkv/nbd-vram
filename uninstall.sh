@@ -6,6 +6,7 @@ set -e
 echo "=== nbd-vram uninstaller ==="
 
 echo "[1/4] Stopping and disabling services..."
+systemctl disable --now vram-swap-nbd-suspend.service 2>/dev/null || true
 systemctl disable --now vram-swap-nbd.service        2>/dev/null || true
 systemctl disable --now nbd-vram-battery-watch.timer 2>/dev/null || true
 echo "      OK"
@@ -15,10 +16,12 @@ rm -f /usr/local/bin/nbd-vram
 rm -f /usr/local/bin/nbd-vram-connect.sh
 rm -f /usr/local/bin/nbd-vram-disconnect.sh
 rm -f /usr/local/bin/nbd-vram-power-check.sh
+rm -f /usr/local/bin/nbd-vram-sleep.sh
 echo "      OK"
 
 echo "[3/4] Removing systemd units and udev rules..."
 rm -f /etc/systemd/system/vram-swap-nbd.service
+rm -f /etc/systemd/system/vram-swap-nbd-suspend.service
 rm -f /etc/systemd/system/nbd-vram-power-check.service
 rm -f /etc/systemd/system/nbd-vram-battery-watch.service
 rm -f /etc/systemd/system/nbd-vram-battery-watch.timer

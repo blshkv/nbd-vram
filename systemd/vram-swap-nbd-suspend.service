@@ -1,0 +1,20 @@
+[Unit]
+Description=Tear down VRAM swap before sleep so the GPU can power down cleanly
+Documentation=https://github.com/c0dejedi/nbd-vram/issues/19
+# On suspend the NVIDIA driver powers down the GPU, destroying the CUDA context
+# that backs the NBD swap device. Any swap I/O still in flight then blocks forever
+# (nbd_send_cmd never completes), which deadlocks the suspend/resume path and the
+# machine won't wake. So we must swapoff and free VRAM while the GPU is STILL ALIVE
+# - i.e. ordered before both systemd's sleep services and nvidia's power-down hooks.
+Before=systemd-suspend.service systemd-hibernate.service systemd-hybrid-sleep.service systemd-suspend-then-hibernate.service
+Before=nvidia-suspend.service nvidia-hibernate.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# ExecStart runs on the way INTO sleep; ExecStop runs on the way OUT (resume).
+ExecStart=/usr/local/bin/nbd-vram-sleep.sh pre
+ExecStop=/usr/local/bin/nbd-vram-sleep.sh post
+
+[Install]
+WantedBy=sleep.target
