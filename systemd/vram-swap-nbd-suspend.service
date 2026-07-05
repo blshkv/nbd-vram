@@ -8,6 +8,12 @@ Documentation=https://github.com/c0dejedi/nbd-vram/issues/19
 # - i.e. ordered before both systemd's sleep services and nvidia's power-down hooks.
 Before=systemd-suspend.service systemd-hibernate.service systemd-hybrid-sleep.service systemd-suspend-then-hibernate.service
 Before=nvidia-suspend.service nvidia-hibernate.service
+# Wants= does not propagate stop, so without this the unit would stay
+# "active (exited)" after resume: ExecStop (the restore) would never run, and
+# ExecStart (the teardown) would not re-run on the next suspend. This makes
+# systemd stop the unit as soon as sleep.target deactivates on resume, which
+# runs the restore and re-arms the teardown for the next sleep.
+StopWhenUnneeded=yes
 
 [Service]
 Type=oneshot
