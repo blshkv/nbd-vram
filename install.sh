@@ -84,6 +84,8 @@ install -m 755 "$SRC_DIR/nbd-vram"                          /usr/local/bin/nbd-v
 install -m 755 "$SRC_DIR/nbd-vram-connect.sh"               /usr/local/bin/nbd-vram-connect.sh
 install -m 755 "$SRC_DIR/nbd-vram-disconnect.sh"            /usr/local/bin/nbd-vram-disconnect.sh
 install -m 644 "$SRC_DIR/systemd/vram-swap-nbd.service"          /etc/systemd/system/
+install -m 755 "$SRC_DIR/nbd-vram-sleep.sh"                     /usr/local/bin/nbd-vram-sleep.sh
+install -m 644 "$SRC_DIR/systemd/vram-swap-nbd-suspend.service" /etc/systemd/system/
 install -m 755 "$SRC_DIR/nbd-vram-power-check.sh"               /usr/local/bin/nbd-vram-power-check.sh
 install -m 644 "$SRC_DIR/systemd/nbd-vram-power-check.service"  /etc/systemd/system/
 install -m 644 "$SRC_DIR/systemd/nbd-vram-battery-watch.service" /etc/systemd/system/
@@ -161,6 +163,10 @@ fi
 echo "[4/4] Enabling vram-swap-nbd.service..."
 systemctl daemon-reload
 systemctl enable vram-swap-nbd.service
+# Tear down VRAM swap before the GPU powers off on suspend, restore it on resume.
+# Always-on: it's a correctness fix (issue #19), and on a machine that never
+# suspends the hook simply never fires.
+systemctl enable vram-swap-nbd-suspend.service
 systemctl enable --now nbd-vram-battery-watch.timer
 udevadm control --reload-rules
 echo "      OK"
