@@ -7,6 +7,8 @@ description="VRAM Swap via NBD (CUDA memcpy backend)"
 command="/usr/local/bin/nbd-vram"
 command_background="yes"
 pidfile="/run/nbd-vram-swap.pid"
+output_log="/var/log/nbd-vram-swap.log"
+error_log="/var/log/nbd-vram-swap.log"
 
 # Defaults — overridden by /etc/conf.d/nbd-vram-swap (sourced by OpenRC before this file)
 : ${VRAM_SETUP_SIZE_MB:=7168}
