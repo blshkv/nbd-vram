@@ -1,4 +1,4 @@
-# /etc/conf.d/vram-swap-nbd - Configuration for the vram-swap-nbd OpenRC service
+# /etc/conf.d/nbd-vram-swap - Configuration for the nbd-vram OpenRC service
 # Edit these values before starting the service for the first time.
 # See also: /etc/nbd-vram.conf for power management settings.
 

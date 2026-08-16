@@ -18,15 +18,15 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Remember a previously-installed VRAM allocation so a reinstall can default to it
-PREV_ALLOC=$(grep -oE 'VRAM_SETUP_SIZE_MB=[0-9]+' /etc/conf.d/vram-swap-nbd 2>/dev/null | grep -oE '[0-9]+$' || true)
+PREV_ALLOC=$(grep -oE 'VRAM_SETUP_SIZE_MB=[0-9]+' /etc/conf.d/nbd-vram-swap 2>/dev/null | grep -oE '[0-9]+$' || true)
 
 # Detect an existing install and stop it cleanly so ExecStop runs swapoff
 # before we replace the binary - never kill a swap-backing daemon out from under swap.
 SERVICE_WAS_ACTIVE=0
-if rc-service vram-swap-nbd status >/dev/null 2>&1; then
+if rc-service nbd-vram-swap status >/dev/null 2>&1; then
     SERVICE_WAS_ACTIVE=1
-    echo "[pre] vram-swap-nbd is running - stopping for upgrade..."
-    rc-service vram-swap-nbd stop || true
+    echo "[pre] nbd-vram is running - stopping for upgrade..."
+    rc-service nbd-vram-swap stop || true
     sleep 1
 fi
 
@@ -89,10 +89,10 @@ install -m 755 "$SRC_DIR/nbd-vram"                          /usr/local/bin/nbd-v
 install -m 755 "$SRC_DIR/nbd-vram-connect.sh"               /usr/local/bin/nbd-vram-connect.sh
 install -m 755 "$SRC_DIR/nbd-vram-disconnect.sh"            /usr/local/bin/nbd-vram-disconnect.sh
 install -m 755 "$OPENRC_DIR/nbd-vram-power-check.sh"        /usr/local/bin/nbd-vram-power-check.sh
-install -m 755 "$OPENRC_DIR/vram-swap-nbd.initd"            /etc/init.d/vram-swap-nbd
+install -m 755 "$OPENRC_DIR/nbd-vram-swap.initd"            /etc/init.d/nbd-vram-swap
 # Install conf.d only if not already present (preserves user edits on reinstall)
-if [ ! -f /etc/conf.d/vram-swap-nbd ]; then
-    install -m 644 "$OPENRC_DIR/vram-swap-nbd.confd"        /etc/conf.d/vram-swap-nbd
+if [ ! -f /etc/conf.d/nbd-vram-swap ]; then
+    install -m 644 "$OPENRC_DIR/nbd-vram-swap.confd"        /etc/conf.d/nbd-vram-swap
 fi
 
 # Udev rule: calls nbd-vram-power-check.sh directly (no systemctl)
@@ -120,8 +120,8 @@ echo "      OK"
 
 # Patch thread/connection count to match available CPUs
 NCPU=$(nproc)
-sed -i "s/VRAM_NBD_THREADS=.*/VRAM_NBD_THREADS=${NCPU}/"       /etc/conf.d/vram-swap-nbd
-sed -i "s/VRAM_NBD_CONNECTIONS=.*/VRAM_NBD_CONNECTIONS=${NCPU}/" /etc/conf.d/vram-swap-nbd
+sed -i "s/VRAM_NBD_THREADS=.*/VRAM_NBD_THREADS=${NCPU}/"       /etc/conf.d/nbd-vram-swap
+sed -i "s/VRAM_NBD_CONNECTIONS=.*/VRAM_NBD_CONNECTIONS=${NCPU}/" /etc/conf.d/nbd-vram-swap
 echo "      threads/connections set to ${NCPU} (nproc)"
 
 # Ask how much VRAM to dedicate to swap
@@ -163,38 +163,38 @@ if [ -t 0 ]; then
         fi
         break
     done
-    sed -i "s/VRAM_SETUP_SIZE_MB=.*/VRAM_SETUP_SIZE_MB=${ALLOC}/" /etc/conf.d/vram-swap-nbd
+    sed -i "s/VRAM_SETUP_SIZE_MB=.*/VRAM_SETUP_SIZE_MB=${ALLOC}/" /etc/conf.d/nbd-vram-swap
     echo "      VRAM allocation set to ${ALLOC} MiB"
 fi
 
 # Enable and (re)start
-echo "[4/4] Enabling vram-swap-nbd service..."
-rc-update add vram-swap-nbd default
+echo "[4/4] Enabling nbd-vram service..."
+rc-update add nbd-vram-swap default
 udevadm control --reload-rules
 echo "      OK"
 
 echo ""
-echo "Starting vram-swap-nbd..."
+echo "Starting nbd-vram..."
 if [ "$SERVICE_WAS_ACTIVE" = "1" ]; then
     echo "(upgrade - restarting to load the new binary)"
 fi
-if rc-service vram-swap-nbd start; then
-    if rc-service vram-swap-nbd status >/dev/null 2>&1; then
+if rc-service nbd-vram-swap start; then
+    if rc-service nbd-vram-swap status >/dev/null 2>&1; then
         echo "OK - swap active:"
         swapon --show | sed 's/^/  /'
     else
-        echo "service did not stay active - check: rc-service vram-swap-nbd status"
+        echo "service did not stay active - check: rc-service nbd-vram-swap status"
     fi
 else
     echo "start deferred (power management may have it disabled on battery)"
-    echo "start manually with: rc-service vram-swap-nbd start"
+    echo "start manually with: rc-service nbd-vram-swap start"
 fi
 
 echo ""
 echo "=== Installation complete ==="
 echo ""
 echo "To check status:"
-echo "  rc-service vram-swap-nbd status"
+echo "  rc-service nbd-vram-swap status"
 echo "  swapon --show"
 echo ""
 echo "To uninstall:"

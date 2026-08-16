@@ -1,14 +1,14 @@
 #!/sbin/openrc-run
-# /etc/init.d/vram-swap-nbd - OpenRC service for VRAM swap via NBD
-# Install via: install -m 755 openrc/vram-swap-nbd.initd /etc/init.d/vram-swap-nbd
-#              install -m 644 openrc/vram-swap-nbd.confd /etc/conf.d/vram-swap-nbd
+# /etc/init.d/nbd-vram-swap - OpenRC service for VRAM swap via NBD
+# Install via: install -m 755 openrc/nbd-vram-swap.initd /etc/init.d/nbd-vram-swap
+#              install -m 644 openrc/nbd-vram-swap.confd  /etc/conf.d/nbd-vram-swap
 
 description="VRAM Swap via NBD (CUDA memcpy backend)"
 command="/usr/local/bin/nbd-vram"
 command_background="yes"
-pidfile="/run/vram-swap-nbd.pid"
+pidfile="/run/nbd-vram-swap.pid"
 
-# Defaults — overridden by /etc/conf.d/vram-swap-nbd (sourced by OpenRC before this file)
+# Defaults — overridden by /etc/conf.d/nbd-vram-swap (sourced by OpenRC before this file)
 : ${VRAM_SETUP_SIZE_MB:=7168}
 : ${VRAM_SWAP_PRIORITY:=1500}
 : ${VRAM_NBD_THREADS:=4}

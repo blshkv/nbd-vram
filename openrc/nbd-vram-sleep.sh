@@ -15,11 +15,11 @@ STATE_FILE=/run/nbd-vram-sleep-disabled
 
 case "$1" in
 	pre)
-		if rc-service vram-swap-nbd status >/dev/null 2>&1; then
+		if rc-service nbd-vram-swap status >/dev/null 2>&1; then
 			echo "nbd-vram-sleep: stopping VRAM swap before sleep" >&2
 			touch "$STATE_FILE"
 			# Blocks until swapoff completes and VRAM is freed, so the GPU suspends clean.
-			rc-service vram-swap-nbd stop
+			rc-service nbd-vram-swap stop
 		fi
 		;;
 	post)
@@ -27,7 +27,7 @@ case "$1" in
 			echo "nbd-vram-sleep: restoring VRAM swap after resume" >&2
 			rm -f "$STATE_FILE"
 			# Fresh daemon -> fresh CUDA context.
-			rc-service vram-swap-nbd start
+			rc-service nbd-vram-swap start
 		fi
 		;;
 	*)

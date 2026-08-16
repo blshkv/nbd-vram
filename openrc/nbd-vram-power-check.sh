@@ -47,17 +47,17 @@ if [ "$AC_ONLINE" = "0" ]; then
 fi
 
 if [ "$SHOULD_DISABLE" = "1" ]; then
-	if rc-service vram-swap-nbd status >/dev/null 2>&1; then
+	if rc-service nbd-vram-swap status >/dev/null 2>&1; then
 		echo "nbd-vram-power-check: disabling VRAM swap (AC_ONLINE=$AC_ONLINE battery=${BATTERY_CAP}%)" >&2
 		touch "$STATE_FILE"
-		rc-service vram-swap-nbd stop
+		rc-service nbd-vram-swap stop
 	fi
 else
 	# Only auto-start if this script previously auto-stopped it.
-	# Never auto-start after a manual 'rc-service vram-swap-nbd stop'.
-	if [ -f "$STATE_FILE" ] && ! rc-service vram-swap-nbd status >/dev/null 2>&1; then
+	# Never auto-start after a manual 'rc-service nbd-vram-swap stop'.
+	if [ -f "$STATE_FILE" ] && ! rc-service nbd-vram-swap status >/dev/null 2>&1; then
 		echo "nbd-vram-power-check: re-enabling VRAM swap (AC_ONLINE=$AC_ONLINE battery=${BATTERY_CAP}%)" >&2
 		rm -f "$STATE_FILE"
-		rc-service vram-swap-nbd start
+		rc-service nbd-vram-swap start
 	fi
 fi

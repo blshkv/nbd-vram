@@ -11,8 +11,8 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 echo "[1/4] Stopping and disabling service..."
-rc-service vram-swap-nbd stop 2>/dev/null || true
-rc-update del vram-swap-nbd   2>/dev/null || true
+rc-service nbd-vram-swap stop 2>/dev/null || true
+rc-update del nbd-vram-swap   2>/dev/null || true
 echo "      OK"
 
 echo "[2/4] Removing binaries..."
@@ -23,8 +23,8 @@ rm -f /usr/local/bin/nbd-vram-power-check.sh
 echo "      OK"
 
 echo "[3/4] Removing init files, cron, sleep hook, and udev rules..."
-rm -f /etc/init.d/vram-swap-nbd
-rm -f /etc/conf.d/vram-swap-nbd
+rm -f /etc/init.d/nbd-vram-swap
+rm -f /etc/conf.d/nbd-vram-swap
 rm -f /etc/cron.d/nbd-vram
 rm -f /lib/elogind/system-sleep/nbd-vram
 rm -f /etc/udev/rules.d/99-nbd-vram-power.rules
