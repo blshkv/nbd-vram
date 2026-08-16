@@ -20,7 +20,9 @@ export VRAM_SETUP_SIZE_MB VRAM_SWAP_PRIORITY VRAM_NBD_THREADS VRAM_NBD_CONNECTIO
 
 depend() {
 	# nbd kernel module must load before we try to claim an nbd device
-	after modules
+	# Start after the display manager so the GPU is initialized for CUDA
+	# (PRIME offload needs X to claim the GPU first on hybrid laptops)
+	after modules xdm
 	use logger
 }
 
